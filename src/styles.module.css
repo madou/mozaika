@@ -15,6 +15,7 @@
   position: relative;
   box-sizing: content-box;
   background: #0f0f10;
+  padding-bottom: 5px;
 }
 
 .error {
