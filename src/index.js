@@ -32,12 +32,16 @@ export default class Mozaika extends React.PureComponent {
       data: PropTypes.arrayOf(PropTypes.object).isRequired,
       ExplorerElement: PropTypes.object.isRequired,
       elementProps: PropTypes.object,
+      loadBatchSize: PropTypes.number,
       children: PropTypes.any
     }
   }
 
+  static defaultProps = {
+    loadBatchSize: 15
+  }
+
   // TODO: We could parameterize these and let user specify them as props.
-  static ELEMENT_LOAD_BATCH_SIZE = 15
   static COLUMN_WIDTH = 300
   static MAX_COLUMNS = 8
 
@@ -59,9 +63,12 @@ export default class Mozaika extends React.PureComponent {
   //
   // 3. Perform an initial layout calculation for the first group of elements to be added to the gallery.
   //
+
   componentDidMount() {
     this._isMounted = true
     this.width = window.innerWidth // Important to now set the width parameter once we mount!
+
+    const { data, loadBatchSize } = this.props
 
     // eslint-disable-next-line no-undef
     this.observer = new IntersectionObserver(
@@ -73,15 +80,19 @@ export default class Mozaika extends React.PureComponent {
       }
     )
 
+    // Check that the 'loadBatchSize' is a positive integer.
+    if (!Number.isInteger(loadBatchSize) || loadBatchSize < 0) {
+      throw new Error(
+        'loadBatchSize must be a positive integer, not',
+        loadBatchSize
+      )
+    }
+
     // Check if no data was provided.
-    if (this.props.data.length === 0) {
+    if (data.length === 0) {
       this.setState({ maxElementsReached: true, loading: false })
     } else {
-      this.setState(
-        this.updateGalleryWith(
-          this.props.data.slice(0, Mozaika.ELEMENT_LOAD_BATCH_SIZE)
-        )
-      )
+      this.setState(this.updateGalleryWith(data.slice(0, loadBatchSize)))
     }
 
     window.addEventListener('resize', this.handleResize)
@@ -248,7 +259,7 @@ export default class Mozaika extends React.PureComponent {
               this.updateGalleryWith(
                 this.props.data.slice(
                   0,
-                  this.state.data.length + Mozaika.ELEMENT_LOAD_BATCH_SIZE
+                  this.state.data.length + this.props.loadBatchSize
                 )
               )
             )
