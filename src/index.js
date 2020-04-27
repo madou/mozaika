@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import deepEqual from './lib/equal'
 import debounce from './lib/debounce'
 import Loader from './components/Loader'
-import styles from './styles.module.css'
 
 export default class Mozaika extends React.PureComponent {
   constructor(props) {
@@ -46,8 +45,8 @@ export default class Mozaika extends React.PureComponent {
   getChildren() {
     const nodes = document.querySelectorAll(`#gallery > div`)
 
-    return [...nodes].map((element) => {
-      return element.getAttribute('data-viewed')
+    return Array.from(nodes).map((element) => {
+      return element.dataset.viewed
     })
   }
 
@@ -273,8 +272,15 @@ export default class Mozaika extends React.PureComponent {
       <div>
         <div
           id='gallery'
-          className={styles.gallery}
-          style={{ height: isNaN(totalHeight) ? 0 : totalHeight }}
+          style={{
+            height: isNaN(totalHeight) ? '100%' : totalHeight,
+            width: '100%',
+            position: 'relative',
+            boxSizing: 'content-box',
+            display: 'inline-block',
+            background: '#0f0f10',
+            paddingBottom: '5px'
+          }}
           ref={this.gallery}
         >
           {data.map((element, index) => {
