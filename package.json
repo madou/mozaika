@@ -1,6 +1,6 @@
 {
   "name": "@feds01/mozaika",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A React component which organises an arbitrary number of elements into a neat grid.",
   "author": "feds01",
   "license": "MIT",
