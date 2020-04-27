@@ -22,6 +22,7 @@ export default class Mozaika extends React.PureComponent {
     this.width = 0
 
     this.handleResize = this.handleResize.bind(this)
+    this.getNewColumnHeights = this.getNewColumnHeights.bind(this)
     this.updateGalleryWith = this.updateGalleryWith.bind(this)
     this.computeElementStyles = this.computeElementStyles.bind(this)
     this.updateHeightFromComponent = this.updateHeightFromComponent.bind(this)
@@ -33,17 +34,18 @@ export default class Mozaika extends React.PureComponent {
       ExplorerElement: PropTypes.object.isRequired,
       elementProps: PropTypes.object,
       loadBatchSize: PropTypes.number,
+      maxColumns: PropTypes.number,
       children: PropTypes.any
     }
   }
 
   static defaultProps = {
-    loadBatchSize: 15
+    loadBatchSize: 15,
+    maxColumns: 8
   }
 
   // TODO: We could parameterize these and let user specify them as props.
   static COLUMN_WIDTH = 300
-  static MAX_COLUMNS = 8
 
   // TODO: We can parameterize the 'id' that's used to identify the gallery container.
   getChildren() {
@@ -52,6 +54,15 @@ export default class Mozaika extends React.PureComponent {
     return Array.from(nodes).map((element) => {
       return element.dataset.viewed
     })
+  }
+
+  getNewColumnHeights() {
+    return Array(
+      Math.min(
+        Math.round(this.gallery.current.clientWidth / Mozaika.COLUMN_WIDTH),
+        this.props.maxColumns
+      )
+    ).fill(0)
   }
 
   // Perform initial setup for the gallery layout to properly work. We must do three things to start off the gallery.
@@ -68,7 +79,7 @@ export default class Mozaika extends React.PureComponent {
     this._isMounted = true
     this.width = window.innerWidth // Important to now set the width parameter once we mount!
 
-    const { data, loadBatchSize } = this.props
+    const { data, loadBatchSize, maxColumns } = this.props
 
     // eslint-disable-next-line no-undef
     this.observer = new IntersectionObserver(
@@ -86,6 +97,11 @@ export default class Mozaika extends React.PureComponent {
         'loadBatchSize must be a positive integer, not',
         loadBatchSize
       )
+    }
+
+    // Check that the 'maxColumns' is a positive integer.
+    if (!Number.isInteger(maxColumns) || maxColumns < 0) {
+      throw new Error('maxColumns must be a positive integer, not', maxColumns)
     }
 
     // Check if no data was provided.
@@ -106,6 +122,7 @@ export default class Mozaika extends React.PureComponent {
     this.observer.disconnect()
   }
 
+  // TODO: we will have to re-compute the layout if the maxColumns changes.
   componentDidUpdate(prevProps, prevState, snapshot) {
     const views = this.getChildren()
 
@@ -142,13 +159,11 @@ export default class Mozaika extends React.PureComponent {
   }
 
   updateExplorerUsingHeightMap(heightMap) {
-    this.columnHeights = Array(
-      Math.min(
-        Math.round(window.innerWidth / Mozaika.COLUMN_WIDTH),
-        Mozaika.MAX_COLUMNS
-      )
-    ).fill(0)
-    const width = Math.round(window.innerWidth / this.columnHeights.length)
+    this.columnHeights = this.getNewColumnHeights()
+
+    const width = Math.round(
+      this.gallery.current.clientWidth / this.columnHeights.length
+    )
 
     const computedStyles = []
 
@@ -184,15 +199,8 @@ export default class Mozaika extends React.PureComponent {
 
   updateGalleryWith(data) {
     const dataCopy = [...data]
-    this.columnHeights = Array(
-      Math.min(
-        Math.round(this.gallery.current.clientWidth / Mozaika.COLUMN_WIDTH),
-        Mozaika.MAX_COLUMNS
-      )
-    ).fill(0)
-
-    // copy over computed styles from old state.
-    let computedStyles = [...this.state.computedStyles]
+    let computedStyles = [...this.state.computedStyles] // copy over computed styles from old state.
+    this.columnHeights = this.getNewColumnHeights()
 
     if (this.state.data.length < data.length && this.state.data.length !== 0) {
       const newStyles = dataCopy
@@ -284,7 +292,7 @@ export default class Mozaika extends React.PureComponent {
         <div
           id='gallery'
           style={{
-            height: isNaN(totalHeight) ? '100%' : totalHeight,
+            height: isNaN(totalHeight) ? '100%' : totalHeight, // TODO: is totalHeight ever a NaN
             width: '100%',
             position: 'relative',
             boxSizing: 'content-box',
