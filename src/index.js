@@ -261,11 +261,11 @@ export default class Mozaika extends React.PureComponent {
   render() {
     const { children, ExplorerElement, elementProps } = this.props
     const {
-      totalHeight,
-      maxElementsReached,
+      data,
       loading,
+      totalHeight,
       computedStyles,
-      data
+      maxElementsReached
     } = this.state
 
     return (
@@ -278,7 +278,7 @@ export default class Mozaika extends React.PureComponent {
             position: 'relative',
             boxSizing: 'content-box',
             display: 'inline-block',
-            background: '#0f0f10',
+            background: '#0f0f10', // TODO: Make this a prop.
             paddingBottom: '5px'
           }}
           ref={this.gallery}

@@ -9,6 +9,7 @@ import styles from './Loader.module.css'
  * @email <alexander.fedotov.uk@gmail.com>
  */
 
+// TODO: In-line the styles.
 const Loader = React.memo(function Loader() {
   return (
     <div className={styles.spinner}>
