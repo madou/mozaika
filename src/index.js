@@ -288,7 +288,11 @@ export default class Mozaika extends React.PureComponent {
     } = this.state
 
     return (
-      <div>
+      <div
+        style={{
+          background: '#0f0f10'
+        }}
+      >
         <div
           id='gallery'
           style={{
