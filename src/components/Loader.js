@@ -7,7 +7,7 @@
  */
 
 import React from 'react'
-import styled from 'styled-components'
+import { styled } from '@compiled/css-in-js'
 
 const Div = styled.div`
   width: 100%;
@@ -52,7 +52,6 @@ const Div = styled.div`
   }
 `
 
-// TODO: In-line the styles.
 const Loader = React.memo(function Loader() {
   return (
     <Div>
