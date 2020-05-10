@@ -31,19 +31,21 @@ export default class Mozaika extends React.PureComponent {
   static get propTypes() {
     return {
       data: PropTypes.arrayOf(PropTypes.object).isRequired,
-      ExplorerElement: PropTypes.object.isRequired,
+      ExplorerElement: PropTypes.func.isRequired,
       elementProps: PropTypes.object,
       loadBatchSize: PropTypes.number,
       maxColumns: PropTypes.number,
       children: PropTypes.any,
-      backgroundColour: PropTypes.string
+      backgroundColour: PropTypes.string,
+      loaderStrokeColour: PropTypes.string
     }
   }
 
   static defaultProps = {
     loadBatchSize: 15,
     maxColumns: 8,
-    backgroundColour: '#0f0f10'
+    backgroundColour: '#0f0f10',
+    loaderStrokeColour: 'hsl(0, 100%, 100%)'
   }
 
   // TODO: We could parameterize these and let user specify them as props.
@@ -284,6 +286,7 @@ export default class Mozaika extends React.PureComponent {
       children,
       ExplorerElement,
       backgroundColour,
+      loaderStrokeColour,
       elementProps
     } = this.props
 
@@ -332,7 +335,7 @@ export default class Mozaika extends React.PureComponent {
             )
           })}
         </div>
-        {loading ? <Loader /> : null}
+        {loading ? <Loader strokeColour={loaderStrokeColour} /> : null}
         <div
           style={{ display: maxElementsReached && !loading ? 'block' : 'none' }}
         >

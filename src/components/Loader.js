@@ -7,13 +7,13 @@
  */
 
 import React from 'react'
+import PropTypes from 'prop-types'
 import { styled } from '@compiled/css-in-js'
 
 const Div = styled.div`
   width: 100%;
   display: block;
   padding: 2em 0;
-  background: #0f0f10;
   text-align: center;
 
   svg {
@@ -25,7 +25,6 @@ const Div = styled.div`
   }
 
   circle {
-    stroke: hsl(0, 100%, 100%);
     stroke-linecap: round;
     animation: dash 1.5s ease-in-out infinite;
   }
@@ -52,11 +51,14 @@ const Div = styled.div`
   }
 `
 
-const Loader = React.memo(function Loader() {
+const Loader = React.memo(function Loader({ strokeColour }) {
   return (
     <Div>
       <svg viewBox='0 0 50 50'>
         <circle
+          style={{
+            stroke: strokeColour
+          }}
           className='path'
           cx='25'
           cy='25'
@@ -68,5 +70,9 @@ const Loader = React.memo(function Loader() {
     </Div>
   )
 })
+
+Loader.propTypes = {
+  strokeColour: PropTypes.string
+}
 
 export default Loader
