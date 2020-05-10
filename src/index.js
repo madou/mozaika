@@ -35,13 +35,15 @@ export default class Mozaika extends React.PureComponent {
       elementProps: PropTypes.object,
       loadBatchSize: PropTypes.number,
       maxColumns: PropTypes.number,
-      children: PropTypes.any
+      children: PropTypes.any,
+      backgroundColour: PropTypes.string
     }
   }
 
   static defaultProps = {
     loadBatchSize: 15,
-    maxColumns: 8
+    maxColumns: 8,
+    backgroundColour: '#0f0f10'
   }
 
   // TODO: We could parameterize these and let user specify them as props.
@@ -278,7 +280,13 @@ export default class Mozaika extends React.PureComponent {
   }
 
   render() {
-    const { children, ExplorerElement, elementProps } = this.props
+    const {
+      children,
+      ExplorerElement,
+      backgroundColour,
+      elementProps
+    } = this.props
+
     const {
       data,
       loading,
@@ -290,18 +298,18 @@ export default class Mozaika extends React.PureComponent {
     return (
       <div
         style={{
-          background: '#0f0f10'
+          background: backgroundColour
         }}
       >
         <div
           id='gallery'
           style={{
-            height: isNaN(totalHeight) ? '100%' : totalHeight, // TODO: is totalHeight ever a NaN
+            height: totalHeight === 0 ? '100% !important' : totalHeight,
             width: '100%',
             position: 'relative',
             boxSizing: 'content-box',
             display: 'inline-block',
-            background: '#0f0f10', // TODO: Make this a prop.
+            background: backgroundColour,
             paddingBottom: '5px'
           }}
           ref={this.gallery}

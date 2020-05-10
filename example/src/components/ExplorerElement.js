@@ -3,36 +3,24 @@ import React, { useEffect, useState, useRef } from "react";
 
 export const IMAGES_CDN = "https://images.mariamiragephotography.com";
 
-function buildSrcSet(source, type) {
-  const basename = source.split(".")[0];
-
-  switch(type) {
-    case "landscape" : {
-      return `
-                ${IMAGES_CDN}/${basename}_small.jpg 300w,
-                ${IMAGES_CDN}/${basename}_medium.jpg 450w,
-                ${IMAGES_CDN}/${basename}_large.jpg 600w
-            `;
-
-    }
-    case "portrait": {
-      return `
-                ${IMAGES_CDN}/${basename}_small.jpg 200w,
-                ${IMAGES_CDN}/${basename}_medium.jpg 300w,
-                ${IMAGES_CDN}/${basename}_large.jpg 400w
-            `;
-
-    }
-    case "square": {
-      return `
-                ${IMAGES_CDN}/${basename}_small.jpg 200w,
-                ${IMAGES_CDN}/${basename}_medium.jpg 450w,
-                ${IMAGES_CDN}/${basename}_large.jpg 600w
-            `
-    }
-    default: return null;
-  }
-}
+/**
+ * Function which is used to build an src and src set for an <img> element based
+ * on metadata returned from the API service in the format of an Array of objects
+ * describing the size of the image with the source url.
+ *
+ * @param {Array<Object>} src - The set of image sources including height and an 'original' flag.
+ * @return {Object} - Returns an object with two parameters; 'src' which is the original source of the
+ * image, and 'srcset' which is a string that combines all the provided source to form a srcset string
+ * for an <img> element.
+ */
+export const buildSourceSet = (src) => {
+  return {
+    src: src.filter((item) => (Boolean(item.original)))[0].url,
+    srcset: src.map((item) => {
+      return `${item.url} ${item.width}w`;
+    }).join(", ")
+  };
+};
 
 
 
@@ -41,11 +29,10 @@ function buildSrcSet(source, type) {
  * image. This will accept any 'loadable' image source and return the standardised
  * source and the sizeType of the image
  *
- * @param {string} src Image source to be loaded.
- * @param {type} type of image (horiz, port, square).
+ * @param {Array<{}>} src Image source to be loaded.
  * @returns {Promise<String>} Image source (loaded) or error message if image loading fails.
  * */
-const loadImage = (src, type) => {
+const loadImage = (src) => {
   return new Promise((resolve, reject) => {
     const image = new Image();
 
@@ -61,8 +48,11 @@ const loadImage = (src, type) => {
       resolve("");
     };
 
-    image.src = `${IMAGES_CDN}/${src}`;
-    image.srcset = buildSrcSet(src, type);
+    // build srcset from provided metadata
+    const imageSources = buildSourceSet(src);
+
+    image.src = imageSources.src;
+    image.srcset = imageSources.srcset;
   });
 };
 
@@ -79,7 +69,7 @@ const ExplorerElement = React.memo(
     });
 
     if (image.src === null && !error) {
-      loadImage(data.source, data.type).then((result) => {
+      loadImage(data.source).then((result) => {
         setImage(result);
       }).catch(() => {
         // If an error occurs during an attempted image load, we can simply use
@@ -101,7 +91,7 @@ const ExplorerElement = React.memo(
             setLoaded(true);
           }}
           sizes={`(max-width:${style.width}px) 100vw, ${style.width}px`}
-          alt={data.keywords.join(" ")}
+          alt={""}
         />
       </div>
 
