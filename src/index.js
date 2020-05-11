@@ -31,7 +31,7 @@ export default class Mozaika extends React.PureComponent {
   static get propTypes() {
     return {
       data: PropTypes.arrayOf(PropTypes.object).isRequired,
-      ExplorerElement: PropTypes.func.isRequired,
+      ExplorerElement: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
       elementProps: PropTypes.object,
       loadBatchSize: PropTypes.number,
       maxColumns: PropTypes.number,
