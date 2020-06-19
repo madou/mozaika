@@ -56,11 +56,11 @@ export default class Mozaika extends React.PureComponent {
   getChildren() {
     if (this.gallery.current === null) return []
 
-    const nodes = this.gallery.current.childNodes
-
-    return Array.from(nodes).map((element) => {
-      return element.dataset.viewed
-    })
+    return Array.from(this.gallery.current.childNodes)
+    // return Array.from(nodes).map((element) => {
+    //   return element.dataset.viewed
+    // })
+    //
   }
 
   getNewColumnHeights() {
@@ -130,19 +130,18 @@ export default class Mozaika extends React.PureComponent {
 
   // TODO: we will have to re-compute the layout if the maxColumns changes.
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const views = this.getChildren()
-
     // if the gallery exists within the DOM, and this is after an initial render, (first render, or after elements
     // were add to the gallery) initiate an IntersectionObserver to monitor image view-ability
     if (!this.state.maxElementsReached) {
-      const nodes = document.querySelectorAll(`#gallery > div`)
+      const nodes = this.getChildren()
 
       // Check if the element has a 'viewed' data key, if not add it to the observer &
       // add the data key to element, otherwise do nothing with element, we don't need to
       // do anything, if the key is already present as this  is a guarantee that it is being
       // observer or it has been viewed.
-      nodes.forEach((element, key) => {
-        element.dataset.viewed = views[key] ? views[key] : false
+      nodes.forEach((element) => {
+        element.dataset.viewed = element.dataset.viewed || false
+
         if (element.dataset.viewed === 'false') {
           this.observer.observe(element)
         }
@@ -259,7 +258,7 @@ export default class Mozaika extends React.PureComponent {
 
     // Let's update the column height now & the computed styles for this element
     this.columnHeights[nextColumn] = elementStyles.top + 1000
-    return elementStyles
+    return elementStyles;
   }
 
   handleIntersection(entries, observerObject) {
@@ -270,10 +269,10 @@ export default class Mozaika extends React.PureComponent {
 
         // check if this is the last photo element or all elements have been viewed
         // if more elements can be retrieved; append next batch, otherwise disconnect observer
-        const views = this.getChildren()
+        const children = this.getChildren()
 
-        if (views.every((view) => view === 'true')) {
-          if (views.length === this.props.data.length) {
+        if (children.every((node) => node.dataset.viewed === 'true')) {
+          if (children.length === this.props.data.length) {
             this.setState({ maxElementsReached: true })
 
             observerObject.disconnect()
