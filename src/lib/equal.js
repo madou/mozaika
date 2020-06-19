@@ -18,11 +18,11 @@
 export default function deepEqual(x, y) {
   if (x === y) {
     return true;
-  } else if ((typeof x == "object" && x != null) && (typeof y == "object" && y != null)) {
-    if (Object.keys(x).length !== Object.keys(y).length)
-      return false;
+  } else if (typeof x === 'object' && x != null && typeof y === 'object' && y != null) {
+    if (Object.keys(x).length !== Object.keys(y).length) return false;
 
     for (const property in x) {
+      // eslint-disable-next-line no-prototype-builtins
       if (y.hasOwnProperty(property)) {
         if (!deepEqual(x[property], y[property])) return false;
       } else return false;

@@ -6,9 +6,9 @@
  * @email <alexander.fedotov.uk@gmail.com>
  */
 
-import React from 'react'
-import PropTypes from 'prop-types'
-import { styled } from '@compiled/css-in-js'
+import React from 'react';
+import PropTypes from 'prop-types';
+import { styled } from '@compiled/css-in-js';
 
 const Div = styled.div`
   width: 100%;
@@ -49,7 +49,7 @@ const Div = styled.div`
       stroke-dashoffset: -124;
     }
   }
-`
+`;
 
 const Loader = React.memo(function Loader({ strokeColour }) {
   return (
@@ -68,11 +68,11 @@ const Loader = React.memo(function Loader({ strokeColour }) {
         />
       </svg>
     </Div>
-  )
-})
+  );
+});
 
 Loader.propTypes = {
   strokeColour: PropTypes.string
-}
+};
 
-export default Loader
+export default Loader;
