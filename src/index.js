@@ -21,6 +21,7 @@ export default class Mozaika extends React.PureComponent {
     this.heights = []
     this.width = 0
 
+    this.getChildren = this.getChildren.bind(this)
     this.handleResize = this.handleResize.bind(this)
     this.getNewColumnHeights = this.getNewColumnHeights.bind(this)
     this.updateGalleryWith = this.updateGalleryWith.bind(this)
@@ -31,7 +32,8 @@ export default class Mozaika extends React.PureComponent {
   static get propTypes() {
     return {
       data: PropTypes.arrayOf(PropTypes.object).isRequired,
-      ExplorerElement: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
+      ExplorerElement: PropTypes.oneOfType([PropTypes.func, PropTypes.object])
+        .isRequired,
       elementProps: PropTypes.object,
       loadBatchSize: PropTypes.number,
       maxColumns: PropTypes.number,
@@ -51,9 +53,10 @@ export default class Mozaika extends React.PureComponent {
   // TODO: We could parameterize these and let user specify them as props.
   static COLUMN_WIDTH = 300
 
-  // TODO: We can parameterize the 'id' that's used to identify the gallery container.
   getChildren() {
-    const nodes = document.querySelectorAll(`#gallery > div`)
+    if (this.gallery.current === null) return []
+
+    const nodes = this.gallery.current.childNodes
 
     return Array.from(nodes).map((element) => {
       return element.dataset.viewed
@@ -69,7 +72,7 @@ export default class Mozaika extends React.PureComponent {
     ).fill(0)
   }
 
-  // Perform initial setup for the gallery layout to properly work. We must do three things to start off the gallery.
+  /* Perform initial setup for the gallery layout to properly work. We must do three things to start off the gallery.
   // 1. Initialise the IntersectionObserver and attach the handleIntersection() function. This is used to determine
   //    if the we should attempt to load the next batch of elements.
   //
@@ -77,8 +80,7 @@ export default class Mozaika extends React.PureComponent {
   //   be re-calculated when the browser window is resized.
   //
   // 3. Perform an initial layout calculation for the first group of elements to be added to the gallery.
-  //
-
+  */
   componentDidMount() {
     this._isMounted = true
     this.width = window.innerWidth // Important to now set the width parameter once we mount!
@@ -148,8 +150,17 @@ export default class Mozaika extends React.PureComponent {
     }
   }
 
+  /**
+   * This function is used to update the 'height' of each child element when children
+   * call 'updateCallback' function to supply computed height. Updates to the map are
+   * prevented if 'loading' state of the component is false to prevent chained updates
+   * of single components and if the height of component hasn't changed.
+   *
+   * @param {number} index - The index of the child that is being updated.
+   * @param {number} height - The computed height value from the component.
+   * */
   updateHeightFromComponent(index, height) {
-    if (this.heights[index] !== height) {
+    if (this.heights[index] !== height && this.state.loading) {
       this.heights[index] = height
     }
 

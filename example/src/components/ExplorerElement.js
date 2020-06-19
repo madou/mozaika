@@ -15,8 +15,8 @@ export const IMAGES_CDN = "https://images.mariamiragephotography.com";
  */
 export const buildSourceSet = (src) => {
   return {
-    src: src.filter((item) => (Boolean(item.original)))[0].url,
-    srcset: src.map((item) => {
+    src: src.original,
+    srcset: src.set.map((item) => {
       return `${item.url} ${item.width}w`;
     }).join(", ")
   };
@@ -62,6 +62,7 @@ const ExplorerElement = React.memo(
     const [image, setImage] = useState({ src: null, srcset: null });
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(false);
+    const [selected, setSelected] = useState(false);
     const ref = useRef(null);
 
     useEffect(() => {
@@ -80,9 +81,10 @@ const ExplorerElement = React.memo(
 
     return (
       <div
-        className={styles.element + (loaded ? " " + styles.visible : "")}
+        className={styles.element + (loaded ? " " + styles.visible : "") +  (selected ? " " + styles.selected : "")}
         ref={ref}
         style={style}
+        onClick={() => setSelected(!selected)}
       >
         <img
           src={!error ? image.src : require("../static/images/not-found.png")}

@@ -21,6 +21,11 @@
   animation: fadeIn 1s;
 }
 
+.selected {
+  box-sizing: border-box;
+  border: #0074D9 2px solid;
+}
+
 .element img {
   display: block;
   max-width: 100%;
