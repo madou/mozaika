@@ -31,25 +31,26 @@ export default class Mozaika extends React.PureComponent {
 
   static get propTypes() {
     return {
-      data: PropTypes.arrayOf(PropTypes.object).isRequired,
-      ExplorerElement: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
-      id: PropTypes.string,
-      elementProps: PropTypes.object,
-      strictOrder: PropTypes.bool.isRequired,
-      loadBatchSize: PropTypes.number,
-      maxColumns: PropTypes.number,
-      children: PropTypes.any,
       backgroundColour: PropTypes.string,
-      loaderStrokeColour: PropTypes.string
+      children: PropTypes.any,
+      data: PropTypes.arrayOf(PropTypes.object).isRequired,
+      Element: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
+      ElementProps: PropTypes.object,
+      id: PropTypes.string,
+      loadBatchSize: PropTypes.number,
+      loaderStrokeColour: PropTypes.string,
+      maxColumns: PropTypes.number,
+      onLayout: PropTypes.func,
+      strictOrder: PropTypes.bool.isRequired
     };
   }
 
   static defaultProps = {
-    loadBatchSize: 15,
-    maxColumns: 8,
-    strictOrder: false,
     backgroundColour: '#0f0f10',
-    loaderStrokeColour: 'hsl(0, 100%, 100%)'
+    loadBatchSize: 15,
+    loaderStrokeColour: 'hsl(0, 100%, 100%)',
+    maxColumns: 8,
+    strictOrder: false
   };
 
   // TODO: We could parameterize these and let user specify them as props.
@@ -196,6 +197,9 @@ export default class Mozaika extends React.PureComponent {
       })
     );
 
+    // Call 'onLayout' function (if defined) to notify anyone who's listening for layout updates
+    if (this.props.onLayout) this.props.onLayout({ totalHeight, computedStyles });
+
     this.setState({ totalHeight, computedStyles, loading: false });
   }
 
@@ -277,8 +281,7 @@ export default class Mozaika extends React.PureComponent {
   }
 
   render() {
-    const { children, ExplorerElement, backgroundColour, loaderStrokeColour, elementProps } = this.props;
-
+    const { children, Element, backgroundColour, loaderStrokeColour, ElementProps } = this.props;
     const { data, loading, totalHeight, computedStyles, maxElementsReached } = this.state;
 
     return (
@@ -302,8 +305,8 @@ export default class Mozaika extends React.PureComponent {
         >
           {data.map((element, index) => {
             return (
-              <ExplorerElement
-                {...elementProps}
+              <Element
+                {...ElementProps}
                 index={index}
                 key={index}
                 data={element}

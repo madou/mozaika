@@ -41,7 +41,11 @@ const App = () => {
 
   if (data.length === 0) return "";
   else {
-    return <Mozaika data={data} strictOrder ExplorerElement={ExplorerElement} />
+    return <Mozaika data={data} onLayout={(update) => {
+      console.log('I got an update!');
+      console.log(update);
+    }
+    } Element={ExplorerElement} />
   }
 }
 
