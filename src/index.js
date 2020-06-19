@@ -35,6 +35,7 @@ export default class Mozaika extends React.PureComponent {
       ExplorerElement: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
       id: PropTypes.string,
       elementProps: PropTypes.object,
+      strictOrder: PropTypes.bool.isRequired,
       loadBatchSize: PropTypes.number,
       maxColumns: PropTypes.number,
       children: PropTypes.any,
@@ -46,6 +47,7 @@ export default class Mozaika extends React.PureComponent {
   static defaultProps = {
     loadBatchSize: 15,
     maxColumns: 8,
+    strictOrder: false,
     backgroundColour: '#0f0f10',
     loaderStrokeColour: 'hsl(0, 100%, 100%)'
   };
@@ -160,12 +162,18 @@ export default class Mozaika extends React.PureComponent {
     this.columnHeights = this.getNewColumnHeights();
 
     const width = Math.round(this.gallery.current.clientWidth / this.columnHeights.length);
-
     const computedStyles = [];
 
     for (const index in Object.keys(this.state.data)) {
-      // Get the smallest column height, we will be adding the image to this column
-      const nextColumn = this.columnHeights.indexOf(Math.min(...this.columnHeights));
+      let nextColumn = 0;
+
+      // Strict order enforces that items are rendered in the order they are supplied.
+      if (this.props.strictOrder) {
+        nextColumn = index % this.columnHeights.length;
+      } else {
+        // Get the smallest column height, we will be adding the image to this column
+        nextColumn = this.columnHeights.indexOf(Math.min(...this.columnHeights));
+      }
 
       const elementStyles = {
         visibility: 'visible',
@@ -203,7 +211,7 @@ export default class Mozaika extends React.PureComponent {
     } else {
       this.heights = [];
 
-      computedStyles = data.map(() => this.computeElementStyles());
+      computedStyles = data.map((item, index) => this.computeElementStyles(index));
     }
 
     return { computedStyles, data, loading: true };
@@ -218,12 +226,18 @@ export default class Mozaika extends React.PureComponent {
     }
   });
 
-  computeElementStyles() {
-    const columns = this.columnHeights.length;
-    const width = Math.round(this.gallery.current.clientWidth / columns);
+  computeElementStyles(index) {
+    const width = Math.round(this.gallery.current.clientWidth / this.columnHeights.length);
 
-    // Get the smallest column height, we will be adding the image to this column
-    const nextColumn = this.columnHeights.indexOf(Math.min(...this.columnHeights));
+    let nextColumn = 0;
+
+    // Strict order enforces that items are rendered in the order they are supplied.
+    if (this.props.strictOrder) {
+      nextColumn = index % this.columnHeights.length;
+    } else {
+      // Get the smallest column height, we will be adding the image to this column
+      nextColumn = this.columnHeights.indexOf(Math.min(...this.columnHeights));
+    }
 
     const elementStyles = {
       visibility: 'hidden',

@@ -41,7 +41,7 @@ const App = () => {
 
   if (data.length === 0) return "";
   else {
-    return <Mozaika data={data} ExplorerElement={ExplorerElement} />
+    return <Mozaika data={data} strictOrder ExplorerElement={ExplorerElement} />
   }
 }
 
