@@ -53,6 +53,7 @@
   ],
   "dependencies": {
     "@compiled/babel-plugin-css-in-js": "0.4.7",
-    "@compiled/css-in-js": "0.4.7"
+    "@compiled/css-in-js": "0.4.7",
+    "@juggle/resize-observer": "^3.2.0"
   }
 }

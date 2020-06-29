@@ -4,6 +4,8 @@ import deepEqual from './lib/equal';
 import debounce from './lib/debounce';
 import Loader from './components/Loader';
 
+import { ResizeObserver } from '@juggle/resize-observer';
+
 export default class Mozaika extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -31,16 +33,30 @@ export default class Mozaika extends React.PureComponent {
 
   static get propTypes() {
     return {
+      /** The background colour of the gallery */
       backgroundColour: PropTypes.string,
+      /** Any content or React Sub-tree that is loaded after the all the content is loaded. */
       children: PropTypes.any,
+      /** The data that is used to populate the items that are loaded into the gallery. */
       data: PropTypes.arrayOf(PropTypes.object).isRequired,
+      /** The Component/Function Component that is used as an item in the gallery. */
       Element: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
+      /** Any props that should be passed to element objects when appending them into the view. */
       ElementProps: PropTypes.object,
+      /** The 'id' attribute of the gallery container. */
       id: PropTypes.string,
+      /** The quantity of items that is attempted to be added when gallery attempts to append more elements
+       * into the view. */
       loadBatchSize: PropTypes.number,
+      /** Colour of the provided loader */
       loaderStrokeColour: PropTypes.string,
+      /** The maximum number of columns the gallery can use to display items. */
       maxColumns: PropTypes.number,
+      /** Function callback that is invoked when a layout cycle is complete. The width, height, and computed
+       * styles of elements are piped into callback. */
       onLayout: PropTypes.func,
+      /** Forces layout of items to be in the exact order given by the caller. No height optimisations will be
+       * carried out if 'strict' order is specified. */
       strictOrder: PropTypes.bool.isRequired
     };
   }
@@ -54,6 +70,7 @@ export default class Mozaika extends React.PureComponent {
   };
 
   // TODO: We could parameterize these and let user specify them as props.
+  /** The width of each column that is used for the gallery */
   static COLUMN_WIDTH = 300;
 
   getChildren() {
@@ -69,26 +86,17 @@ export default class Mozaika extends React.PureComponent {
   }
 
   /* Perform initial setup for the gallery layout to properly work. We must do three things to start off the gallery.
-  // 1. Initialise the IntersectionObserver and attach the handleIntersection() function. This is used to determine
-  //    if the we should attempt to load the next batch of elements.
-  //
-  // 2. Attach an event listener for window re-size events so that the gallery layout can
-  //   be re-calculated when the browser window is resized.
-  //
-  // 3. Perform an initial layout calculation for the first group of elements to be added to the gallery.
-  */
+   * 1. Initialise the IntersectionObserver and attach the handleIntersection() function. This is used to determine
+   *    if the we should attempt to load the next batch of elements.
+   *
+   * 2. Attach an event listener for window re-size events so that the gallery layout can
+   *   be re-calculated when the browser window is resized.
+   *
+   * 3. Perform an initial layout calculation for the first group of elements to be added to the gallery.
+   */
   componentDidMount() {
     this._isMounted = true;
-    this.width = window.innerWidth; // Important to now set the width parameter once we mount!
-
     const { data, loadBatchSize, maxColumns } = this.props;
-
-    // eslint-disable-next-line no-undef
-    this.observer = new IntersectionObserver(this.handleIntersection.bind(this), {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    });
 
     // Check that the 'loadBatchSize' is a positive integer.
     if (!Number.isInteger(loadBatchSize) || loadBatchSize < 0) {
@@ -107,15 +115,28 @@ export default class Mozaika extends React.PureComponent {
       this.setState(this.updateGalleryWith(data.slice(0, loadBatchSize)));
     }
 
-    window.addEventListener('resize', this.handleResize);
+    this.width = this.gallery.current.clientWidth; // Important to now set the width parameter once we mount!
+
+    // eslint-disable-next-line no-undef
+    this.observer = new IntersectionObserver(this.handleIntersection.bind(this), {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    });
+
+    this.resizeObserver = new ResizeObserver(this.handleResize);
+    this.resizeObserver.observe(this.gallery.current);
   }
 
-  // Remove the event listener and disconnect the intersection observer.
+  /**
+   * On the Component un-mount event, we'll set '_isMounted' to false preventing any future 'resize' update
+   * event and disconnect the 'IntersectionObserver' and 'ResizeObserver' components by calling 'disconnect'.
+   * */
   componentWillUnmount() {
     this._isMounted = false;
 
-    window.removeEventListener('resize', this.handleResize);
     this.observer.disconnect();
+    this.resizeObserver.disconnect();
   }
 
   // TODO: we will have to re-compute the layout if the maxColumns changes.
@@ -198,7 +219,7 @@ export default class Mozaika extends React.PureComponent {
     );
 
     // Call 'onLayout' function (if defined) to notify anyone who's listening for layout updates
-    if (this.props.onLayout) this.props.onLayout({ totalHeight, computedStyles });
+    if (this.props.onLayout) this.props.onLayout({ height: totalHeight, width: this.width, computedStyles });
 
     this.setState({ totalHeight, computedStyles, loading: false });
   }
@@ -222,13 +243,15 @@ export default class Mozaika extends React.PureComponent {
   }
 
   // This method is only used for the 'onresize' listener
-  handleResize = debounce(() => {
-    if (this._isMounted && this.width !== window.innerWidth) {
-      this.width = window.innerWidth;
+  handleResize = (entries, observer) => {
+    debounce(() => {
+      if (this._isMounted && this.width !== entries[0].contentRect.width) {
+        this.width = entries[0].contentRect.width;
 
-      this.setState(this.updateGalleryWith(this.state.data));
-    }
-  });
+        this.setState(this.updateGalleryWith(this.state.data));
+      }
+    })();
+  };
 
   computeElementStyles(index) {
     const width = Math.round(this.gallery.current.clientWidth / this.columnHeights.length);
