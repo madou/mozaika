@@ -180,7 +180,10 @@ export default class Mozaika extends React.PureComponent {
       this.heights[index] = height;
     }
 
-    if (Object.keys(this.heights).length === this.state.data.length && !deepEqual(this.heights, this.oldHeightMap)) {
+    if (
+      Object.keys(this.heights).length === this.state.data.length &&
+      (!deepEqual(this.heights, this.oldHeightMap) || this.state.loading)
+    ) {
       this.oldHeightMap = this.heights.slice();
       this.updateExplorerUsingHeightMap(this.heights);
     }
@@ -237,7 +240,7 @@ export default class Mozaika extends React.PureComponent {
 
     if (this.state.data.length < data.length && this.state.data.length !== 0) {
       const newStyles = dataCopy.splice(this.state.data.length, data.length).map((item, index) => {
-        this.computeElementStyles(index);
+        return this.computeElementStyles(index);
       });
 
       computedStyles.push(...newStyles);

@@ -48,14 +48,14 @@ const App = () => {
   else {
     return (
       <div>
-        <div style={{ width: sidebarWidth, height: '100%' }}>
+        <div className={'sidebar'} style={{ width: sidebarWidth, height: '100%' }}>
           sidebar
         </div>
-        <div style={{ width: `calc(100% - ${sidebarWidth})`, marginLeft: sidebarWidth }}>
+        <div className={'main'} style={{ width: `calc(100% - ${sidebarWidth})`, marginLeft: sidebarWidth }}>
           <button onClick={toggleSidebar}>open</button>
           <Mozaika data={data} onLayout={(update) => {
-            console.log('I got an update!');
-            console.log(update);
+            //console.log('I got an update!');
+            //console.log(update);
           }
           } Element={ExplorerElement}/>
         </div>

@@ -16,7 +16,7 @@
  * @return {Function} original function that is now debounced.
  */
 
-export default function debounce(fn, threshold = 50) {
+export default function debounce(fn, threshold = 5) {
   let deferTimer = null;
 
   const debounced = () => {
