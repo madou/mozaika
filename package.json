@@ -1,6 +1,6 @@
 {
   "name": "@feds01/mozaika",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A React component which organises an arbitrary number of elements into a neat grid.",
   "author": "feds01",
   "license": "MIT",
@@ -54,6 +54,7 @@
   "dependencies": {
     "@compiled/babel-plugin-css-in-js": "0.4.7",
     "@compiled/css-in-js": "0.4.7",
-    "@juggle/resize-observer": "^3.2.0"
+    "@juggle/resize-observer": "^3.2.0",
+    "intersection-observer": "0.11.0"
   }
 }

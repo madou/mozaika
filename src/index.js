@@ -4,7 +4,13 @@ import deepEqual from './lib/equal';
 import debounce from './lib/debounce';
 import Loader from './components/Loader';
 
+// Load in ResizeObserver API if it's not natively supported.
+// @see See [https://caniuse.com/#feat=resizeobserver]
 import { ResizeObserver } from '@juggle/resize-observer';
+
+// Load in IntersectionObserver API if it's not natively supported.
+// @see See [https://caniuse.com/#feat=intersectionobserver]
+require('intersection-observer');
 
 export default class Mozaika extends React.PureComponent {
   constructor(props) {
