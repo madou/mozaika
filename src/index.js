@@ -236,7 +236,9 @@ export default class Mozaika extends React.PureComponent {
     this.columnHeights = this.getNewColumnHeights();
 
     if (this.state.data.length < data.length && this.state.data.length !== 0) {
-      const newStyles = dataCopy.splice(this.state.data.length, data.length).map(() => this.computeElementStyles());
+      const newStyles = dataCopy.splice(this.state.data.length, data.length).map((item, index) => {
+        this.computeElementStyles(index);
+      });
 
       computedStyles.push(...newStyles);
     } else {
