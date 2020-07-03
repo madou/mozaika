@@ -153,8 +153,6 @@ export default class Mozaika extends React.PureComponent {
    * We also need to check if a new batch of items has been flagged for loading, this is done by checking if
    * the 'maxElementsReached' flag is set to true. If it has been set, we don't need to observe the current items
    * in the viewport. If not set, we'll select all the items that haven't already been observed by the IntersectionObserver.
-   *
-   *
    * */
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (this.props.data.length > 0 && !deepEqual(prevProps.data, this.props.data)) {
