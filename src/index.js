@@ -145,8 +145,25 @@ export default class Mozaika extends React.PureComponent {
     this.resizeObserver.disconnect();
   }
 
-  // TODO: we will have to re-compute the layout if the maxColumns changes.
+  /**
+   * On a component update, we need to check for several things. The first thing that we need to check
+   * is if the 'data' prop has changed as this means a reset of the entire state.
+   *  TODO: we will have to re-compute the layout if the maxColumns changes.
+   *
+   * We also need to check if a new batch of items has been flagged for loading, this is done by checking if
+   * the 'maxElementsReached' flag is set to true. If it has been set, we don't need to observe the current items
+   * in the viewport. If not set, we'll select all the items that haven't already been observed by the IntersectionObserver.
+   *
+   *
+   * */
   componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.props.data.length > 0 && !deepEqual(prevProps.data, this.props.data)) {
+      const calculatedState = this.updateGalleryWith(this.props.data.slice(0, this.props.loadBatchSize));
+
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ ...calculatedState, maxElementsReached: false });
+    }
+
     // if the gallery exists within the DOM, and this is after an initial render, (first render, or after elements
     // were add to the gallery) initiate an IntersectionObserver to monitor image view-ability
     if (!this.state.maxElementsReached) {
@@ -256,7 +273,7 @@ export default class Mozaika extends React.PureComponent {
   // This method is only used for the 'onresize' listener
   handleResize = (entries, observer) => {
     debounce(() => {
-      if (this._isMounted && this.width !== entries[0].contentRect.width) {
+      if (this._isMounted && this.width !== entries[0].contentRect.width && this.props.data.length > 0) {
         this.width = entries[0].contentRect.width;
 
         this.setState(this.updateGalleryWith(this.state.data));
@@ -302,8 +319,6 @@ export default class Mozaika extends React.PureComponent {
         if (children.every((node) => node.dataset.viewed === 'true')) {
           if (children.length === this.props.data.length) {
             this.setState({ maxElementsReached: true });
-
-            observerObject.disconnect();
           } else {
             this.setState(
               this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))

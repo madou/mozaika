@@ -44,24 +44,22 @@ const App = () => {
     setSidebarWidth(sidebarWidth > 0 ? 0 : 240);
   };
 
-  if (data.length === 0) return '';
-  else {
-    return (
-      <div>
-        <div className={'sidebar'} style={{ width: sidebarWidth, height: '100%' }}>
-          sidebar
-        </div>
-        <div className={'main'} style={{ width: `calc(100% - ${sidebarWidth})`, marginLeft: sidebarWidth }}>
-          <button onClick={toggleSidebar}>open</button>
-          <Mozaika data={data} onLayout={(update) => {
-            //console.log('I got an update!');
-            //console.log(update);
-          }
-          } Element={ExplorerElement}/>
-        </div>
+
+  return (
+    <div>
+      <div className={'sidebar'} style={{ width: sidebarWidth, height: '100%' }}>
+        sidebar
       </div>
-    );
-  }
+      <div className={'main'} style={{ width: `calc(100% - ${sidebarWidth})`, marginLeft: sidebarWidth }}>
+        <button onClick={toggleSidebar}>open</button>
+        <Mozaika data={data} onLayout={(update) => {
+          console.log('I got an update!');
+          console.log(update);
+        }
+        } Element={ExplorerElement}/>
+      </div>
+    </div>
+  );
 };
 
 export default App;
