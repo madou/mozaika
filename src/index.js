@@ -246,9 +246,9 @@ export default class Mozaika extends React.PureComponent {
     );
 
     // Call 'onLayout' function (if defined) to notify anyone who's listening for layout updates
-    if (this.props.onLayout) this.props.onLayout({ height: totalHeight, width: this.width, computedStyles });
-
-    this.setState({ totalHeight, computedStyles, loading: false });
+    this.setState({ totalHeight, computedStyles, loading: false }, () => {
+      if (this.props.onLayout) this.props.onLayout({ height: totalHeight, width: this.width, computedStyles });
+    });
   }
 
   updateGalleryWith(data) {
@@ -373,7 +373,7 @@ export default class Mozaika extends React.PureComponent {
             );
           })}
         </div>
-        {loading ? <Loader strokeColour={loaderStrokeColour} /> : null}
+        {loading ? <Loader strokeColour={loaderStrokeColour}/> : null}
         <div style={{ display: maxElementsReached && !loading ? 'block' : 'none' }}>{children}</div>
       </div>
     );
