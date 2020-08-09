@@ -332,15 +332,11 @@ export default class Mozaika extends React.PureComponent {
     const { data, loading, totalHeight, computedStyles, maxElementsReached } = this.state;
 
     return (
-      <div
-        style={{
-          background: backgroundColour
-        }}
-      >
+      <div style={{ background: backgroundColour }}>
         <div
           {...(this.props.id && { id: this.props.id })}
           style={{
-            height: totalHeight === 0 ? '100% !important' : totalHeight,
+            height: loading || totalHeight === 0 ? '100% !important' : totalHeight,
             width: '100%',
             position: 'relative',
             boxSizing: 'content-box',
@@ -365,7 +361,7 @@ export default class Mozaika extends React.PureComponent {
             );
           })}
         </div>
-        {loading ? <Loader strokeColour={loaderStrokeColour} /> : null}
+        {loading ? <Loader strokeColour={loaderStrokeColour}/> : null}
         <div style={{ display: maxElementsReached && !loading ? 'block' : 'none' }}>{children}</div>
       </div>
     );

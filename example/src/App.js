@@ -4,10 +4,11 @@ import Mozaika from 'mozaika';
 import 'mozaika/dist/index.css';
 import ExplorerElement from './components/ExplorerElement';
 
+export const DEV_API = 'https://5uxeooen15.execute-api.eu-west-2.amazonaws.com/dev';
 export const API = 'https://api.mariamiragephotography.com';
 
 function getData() {
-  return fetch(`${API}/photo?theme=*`)
+  return fetch(`${DEV_API}/photo?limit=50`)
     .then(response => (response.json()))
     .then(response => {
       if (!response.status) throw new Error('Failed to load data.');
