@@ -39,6 +39,8 @@ export default class Mozaika extends React.PureComponent {
 
   static get propTypes() {
     return {
+      /** Adjust the Y-scroll position when container/window gets resized */
+      adjustScroll: PropTypes.bool,
       /** The background colour of the gallery */
       backgroundColour: PropTypes.string,
       /** Any content or React Sub-tree that is loaded after the all the content is loaded. */
@@ -68,6 +70,7 @@ export default class Mozaika extends React.PureComponent {
   }
 
   static defaultProps = {
+    adjustScroll: true,
     backgroundColour: '#0f0f10',
     loadBatchSize: 15,
     loaderStrokeColour: 'hsl(0, 100%, 100%)',
@@ -272,8 +275,17 @@ export default class Mozaika extends React.PureComponent {
   handleResize = (entries, observer) => {
     debounce(() => {
       if (this._isMounted && this.width !== entries[0].contentRect.width && this.props.data.length > 0) {
-        this.width = entries[0].contentRect.width;
+        if (this.props.adjustScroll) {
+          // Essentially we are working out the ratio between the old height and
+          // the new height of the container and then applying it to the current
+          // pageYOffset value. So when the container is resized, the user should
+          // remain where they were in relative terms.
+          const heightRatio = this.state.totalHeight / entries[0].contentRect.height;
 
+          window.scrollTo(0, window.pageYOffset * heightRatio);
+        }
+
+        this.width = entries[0].contentRect.width;
         this.setState(this.updateGalleryWith(this.state.data));
       }
     })();
@@ -361,7 +373,7 @@ export default class Mozaika extends React.PureComponent {
             );
           })}
         </div>
-        {loading ? <Loader strokeColour={loaderStrokeColour}/> : null}
+        {loading ? <Loader strokeColour={loaderStrokeColour} /> : null}
         <div style={{ display: maxElementsReached && !loading ? 'block' : 'none' }}>{children}</div>
       </div>
     );
