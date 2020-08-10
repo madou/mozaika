@@ -321,22 +321,44 @@ export default class Mozaika extends React.PureComponent {
       if (entry.isIntersecting) {
         entry.target.setAttribute('data-viewed', 'true');
         observerObject.unobserve(entry.target);
-
-        // check if this is the last photo element or all elements have been viewed
-        // if more elements can be retrieved; append next batch, otherwise disconnect observer
-        const children = this.getChildren();
-
-        if (children.every((node) => node.dataset.viewed === 'true')) {
-          if (children.length === this.props.data.length) {
-            this.setState({ maxElementsReached: true });
-          } else {
-            this.setState(
-              this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
-            );
-          }
-        }
       }
     });
+
+    // check if this is the last photo element or all elements have been viewed
+    // if more elements can be retrieved; append next batch, otherwise disconnect observer
+    const viewed = this.getChildren().map((node) => node.dataset.viewed);
+
+    if (viewed.every((element) => element === 'true')) {
+      if (viewed.length === this.props.data.length) {
+        this.setState({ maxElementsReached: true });
+      } else {
+        this.setState(
+          this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
+        );
+      }
+    } else if (!this.state.loading) {
+      const bottomElements = viewed.slice(viewed.length - this.columnHeights.length, viewed.length);
+
+      // This is a shortcut to invoking if a nextBatch update if any of the bottom elements have
+      // been viewed or were present within the viewport. If this condition passes, all previous element
+      // 'viewed' values are set to true to avoid future fallthrough.
+      // See https://github.com/Maria-Mirage/mozaika/issues/34 for more info.
+      if (bottomElements.some((element) => element === 'true')) {
+        // set every 'viewed' attribute of gallery children elements to true and attempt to load next
+        // data batch.
+        this.getChildren().forEach((child) => {
+          child.setAttribute('data-viewed', 'true');
+        });
+
+        if (viewed.length === this.props.data.length) {
+          this.setState({ maxElementsReached: true });
+        } else {
+          this.setState(
+            this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
+          );
+        }
+      }
+    }
   }
 
   render() {
