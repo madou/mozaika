@@ -336,7 +336,7 @@ export default class Mozaika extends React.PureComponent {
           this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
         );
       }
-    } else if (!this.state.loading) {
+    } else if (!this.state.loading && !this.state.maxElementsReached) {
       const bottomElements = viewed.slice(viewed.length - this.columnHeights.length, viewed.length);
 
       // This is a shortcut to invoking if a nextBatch update if any of the bottom elements have
@@ -395,7 +395,7 @@ export default class Mozaika extends React.PureComponent {
             );
           })}
         </div>
-        {loading ? <Loader strokeColour={loaderStrokeColour}/> : null}
+        {loading ? <Loader strokeColour={loaderStrokeColour} /> : null}
         <div style={{ display: maxElementsReached && !loading ? 'block' : 'none' }}>{children}</div>
       </div>
     );
