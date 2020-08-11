@@ -324,6 +324,9 @@ export default class Mozaika extends React.PureComponent {
       }
     });
 
+    // Prevent any updates while we're loading in new items.
+    if (this.state.loading) return;
+
     // check if this is the last photo element or all elements have been viewed
     // if more elements can be retrieved; append next batch, otherwise disconnect observer
     const viewed = this.getChildren().map((node) => node.dataset.viewed);
@@ -336,7 +339,7 @@ export default class Mozaika extends React.PureComponent {
           this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
         );
       }
-    } else if (!this.state.loading && !this.state.maxElementsReached) {
+    } else if (!this.state.maxElementsReached) {
       const bottomElements = viewed.slice(viewed.length - this.columnHeights.length, viewed.length);
 
       // This is a shortcut to invoking if a nextBatch update if any of the bottom elements have

@@ -8,7 +8,7 @@ export const DEV_API = 'https://5uxeooen15.execute-api.eu-west-2.amazonaws.com/d
 export const API = 'https://api.mariamiragephotography.com';
 
 function getData() {
-  return fetch(`${DEV_API}/photo?limit=200`)
+  return fetch(`${DEV_API}/testimonial?limit=200`)
     .then(response => (response.json()))
     .then(response => {
       if (!response.status) throw new Error('Failed to load data.');
