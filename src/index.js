@@ -21,7 +21,8 @@ export default class Mozaika extends React.PureComponent {
       computedStyles: [],
       loading: true,
       totalHeight: 0,
-      maxElementsReached: false
+      maxElementsReached: false,
+      maxDataReached: false // Used with 'stream mode'
     };
 
     this.gallery = React.createRef();
@@ -63,6 +64,8 @@ export default class Mozaika extends React.PureComponent {
       /** Function callback that is invoked when a layout cycle is complete. The width, height, and computed
        * styles of elements are piped into callback. */
       onLayout: PropTypes.func,
+      /** Flag to determine if we're expecting data to come in as a stream instead of a singular chunk */
+      streamMode: PropTypes.bool,
       /** Forces layout of items to be in the exact order given by the caller. No height optimisations will be
        * carried out if 'strict' order is specified. */
       strictOrder: PropTypes.bool.isRequired
@@ -75,6 +78,7 @@ export default class Mozaika extends React.PureComponent {
     loadBatchSize: 15,
     loaderStrokeColour: 'hsl(0, 100%, 100%)',
     maxColumns: 8,
+    streamMode: false,
     strictOrder: false
   };
 
@@ -151,18 +155,35 @@ export default class Mozaika extends React.PureComponent {
   /**
    * On a component update, we need to check for several things. The first thing that we need to check
    * is if the 'data' prop has changed as this means a reset of the entire state.
-   *  TODO: we will have to re-compute the layout if the maxColumns changes.
    *
    * We also need to check if a new batch of items has been flagged for loading, this is done by checking if
    * the 'maxElementsReached' flag is set to true. If it has been set, we don't need to observe the current items
    * in the viewport. If not set, we'll select all the items that haven't already been observed by the IntersectionObserver.
    * */
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.props.data.length > 0 && !deepEqual(prevProps.data, this.props.data)) {
-      const calculatedState = this.updateGalleryWith(this.props.data.slice(0, this.props.loadBatchSize));
-
+  async componentDidUpdate(prevProps, prevState, snapshot) {
+    // If the maxColumns prop changes, we have to re-compute the entire layout.
+    if (prevProps.maxColumns !== this.props.maxColumns) {
       // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({ ...calculatedState, maxElementsReached: false });
+      this.setState(this.updateGalleryWith(this.state.data));
+    }
+
+    if (this.props.data.length > 0 && !deepEqual(prevProps.data, this.props.data)) {
+      if (!this.props.streamMode) {
+        const calculatedState = this.updateGalleryWith(this.props.data.slice(0, this.props.loadBatchSize));
+
+        // eslint-disable-next-line react/no-did-update-set-state
+        this.setState({ ...calculatedState, maxElementsReached: false });
+      } else {
+        // We'll need to patch in the current data state with the new prop by determining the offset.
+        // Example: if current data is of size 50 and prop data is now 100, we need to begin loading
+        // from 50 instead of 0, or otherwise we will duplicate the first 50 items.
+        const calculatedState = this.updateGalleryWith(
+          this.props.data.slice(0, this.props.loadBatchSize + this.state.data.length)
+        );
+
+        // eslint-disable-next-line react/no-did-update-set-state
+        this.setState({ ...calculatedState, maxElementsReached: false });
+      }
     }
 
     // if the gallery exists within the DOM, and this is after an initial render, (first render, or after elements
@@ -181,6 +202,30 @@ export default class Mozaika extends React.PureComponent {
           this.observer.observe(element);
         }
       });
+    } else if (
+      this.props.streamMode &&
+      !this.state.maxDataReached &&
+      this.props.data.length > 0 &&
+      this.props.data.length === this.state.data.length
+    ) {
+      // We'll need to load more data when we reach this state by invoking the user
+      // provided prop function 'onNextBatch'. If the function wasn't provided, we throw
+      // an error since we can't load anything without the function.
+      //
+      // This function doesn't return the next data batch because it could be async and therefore
+      // waiting for the request to complete when we could be propagating other updates
+      // is inefficient, and thus we expect the 'data' prop to be modified.
+      if (typeof this.props.onNextBatch !== 'function') {
+        throw new Error(`When Mozaika is in 'stream' mode, a 'onNextBatch' function is expected to be provided.`);
+      }
+      // The result will determine if we have exhausted all the data which can be loaded. If onNextBatch returns
+      // false, this means that the data store has been exhausted and therefore there is no more data to be loaded.
+      const result = this.props.onNextBatch();
+
+      if (!result) {
+        // eslint-disable-next-line react/no-did-update-set-state
+        this.setState({ maxDataReached: true });
+      }
     }
   }
 
@@ -330,8 +375,29 @@ export default class Mozaika extends React.PureComponent {
     // check if this is the last photo element or all elements have been viewed
     // if more elements can be retrieved; append next batch, otherwise disconnect observer
     const viewed = this.getChildren().map((node) => node.dataset.viewed);
+    //
+    // if (viewed.every((element) => element === 'true')) {
+    //   if (viewed.length === this.props.data.length) {
+    //     this.setState({ maxElementsReached: true });
+    //   } else {
+    //     this.setState(
+    //       this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
+    //     );
+    //   }
+    // } else {
+    const bottomElements = viewed.slice(viewed.length - this.columnHeights.length, viewed.length);
 
-    if (viewed.every((element) => element === 'true')) {
+    // This is a shortcut to invoking if a nextBatch update if any of the bottom elements have
+    // been viewed or were present within the viewport. If this condition passes, all previous element
+    // 'viewed' values are set to true to avoid future fallthrough.
+    // See https://github.com/Maria-Mirage/mozaika/issues/34 for more info.
+    if (bottomElements.some((element) => element === 'true')) {
+      // set every 'viewed' attribute of gallery children elements to true and attempt to load next
+      // data batch.
+      this.getChildren().forEach((child) => {
+        child.setAttribute('data-viewed', 'true');
+      });
+
       if (viewed.length === this.props.data.length) {
         this.setState({ maxElementsReached: true });
       } else {
@@ -339,29 +405,8 @@ export default class Mozaika extends React.PureComponent {
           this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
         );
       }
-    } else if (!this.state.maxElementsReached) {
-      const bottomElements = viewed.slice(viewed.length - this.columnHeights.length, viewed.length);
-
-      // This is a shortcut to invoking if a nextBatch update if any of the bottom elements have
-      // been viewed or were present within the viewport. If this condition passes, all previous element
-      // 'viewed' values are set to true to avoid future fallthrough.
-      // See https://github.com/Maria-Mirage/mozaika/issues/34 for more info.
-      if (bottomElements.some((element) => element === 'true')) {
-        // set every 'viewed' attribute of gallery children elements to true and attempt to load next
-        // data batch.
-        this.getChildren().forEach((child) => {
-          child.setAttribute('data-viewed', 'true');
-        });
-
-        if (viewed.length === this.props.data.length) {
-          this.setState({ maxElementsReached: true });
-        } else {
-          this.setState(
-            this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
-          );
-        }
-      }
     }
+    // }
   }
 
   render() {

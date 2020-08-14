@@ -1,7 +1,7 @@
-import Mozaika from '.';
+import { ExampleComponent } from '.'
 
 describe('ExampleComponent', () => {
   it('is truthy', () => {
-    expect(Mozaika).toBeTruthy();
-  });
-});
+    expect(ExampleComponent).toBeTruthy()
+  })
+})

@@ -4,9 +4,6 @@
 # dependencies
 node_modules
 
-# editor config files
-.idea
-
 # builds
 build
 dist
