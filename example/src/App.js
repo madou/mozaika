@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-
-import Mozaika from "mozaika";
-import "mozaika/dist/index.css";
+import Mozaika from "@feds01/mozaika";
 import ExplorerElement from "./components/ExplorerElement";
 
 export const DEV_API = "https://5uxeooen15.execute-api.eu-west-2.amazonaws.com/dev";
