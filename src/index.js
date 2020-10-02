@@ -66,6 +66,9 @@ export default class Mozaika extends React.PureComponent {
       onLayout: PropTypes.func,
       /** Flag to determine if we're expecting data to come in as a stream instead of a singular chunk */
       streamMode: PropTypes.bool,
+      /** This key is used to reset a stream flow, if it changes at any point; Mozaika will assume that we begun
+       * a new stream order. */
+      resetStreamKey: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
       /** Forces layout of items to be in the exact order given by the caller. No height optimisations will be
        * carried out if 'strict' order is specified. */
       strictOrder: PropTypes.bool.isRequired
@@ -79,6 +82,7 @@ export default class Mozaika extends React.PureComponent {
     loaderStrokeColour: 'hsl(0, 100%, 100%)',
     maxColumns: 8,
     streamMode: false,
+    resetStreamKey: null,
     strictOrder: false
   };
 
@@ -165,6 +169,16 @@ export default class Mozaika extends React.PureComponent {
     if (prevProps.maxColumns !== this.props.maxColumns) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState(this.updateGalleryWith(this.state.data));
+    }
+
+    if (this.props.streamMode && !deepEqual(prevProps.resetStreamKey, this.props.resetStreamKey)) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
+        data: [],
+        loading: true,
+        maxElementsReached: false,
+        maxDataReached: false
+      });
     }
 
     if (this.props.data.length > 0 && !deepEqual(prevProps.data, this.props.data)) {
@@ -375,16 +389,6 @@ export default class Mozaika extends React.PureComponent {
     // check if this is the last photo element or all elements have been viewed
     // if more elements can be retrieved; append next batch, otherwise disconnect observer
     const viewed = this.getChildren().map((node) => node.dataset.viewed);
-    //
-    // if (viewed.every((element) => element === 'true')) {
-    //   if (viewed.length === this.props.data.length) {
-    //     this.setState({ maxElementsReached: true });
-    //   } else {
-    //     this.setState(
-    //       this.updateGalleryWith(this.props.data.slice(0, this.state.data.length + this.props.loadBatchSize))
-    //     );
-    //   }
-    // } else {
     const bottomElements = viewed.slice(viewed.length - this.columnHeights.length, viewed.length);
 
     // This is a shortcut to invoking if a nextBatch update if any of the bottom elements have
@@ -443,7 +447,7 @@ export default class Mozaika extends React.PureComponent {
             );
           })}
         </div>
-        {loading ? <Loader strokeColour={loaderStrokeColour} /> : null}
+        {loading && <Loader strokeColour={loaderStrokeColour} />}
         <div style={{ display: maxElementsReached && !loading ? 'block' : 'none' }}>{children}</div>
       </div>
     );
