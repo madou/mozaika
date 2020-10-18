@@ -410,7 +410,6 @@ export default class Mozaika extends React.PureComponent {
         );
       }
     }
-    // }
   }
 
   render() {
