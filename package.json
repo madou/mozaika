@@ -45,7 +45,7 @@
     "prettier": "2.1.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.3"
+    "react-scripts": "4.0.1"
   },
   "dependencies": {
     "@compiled/babel-plugin-css-in-js": "0.4.7",
