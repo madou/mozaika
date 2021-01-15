@@ -27,6 +27,7 @@
     "react": "^16.0.0"
   },
   "devDependencies": {
+    "@compiled/babel-plugin": "^0.6.0",
     "babel-eslint": "^10.0.3",
     "cross-env": "^7.0.2",
     "eslint": "^6.8.0",
@@ -48,8 +49,7 @@
     "react-scripts": "3.4.3"
   },
   "dependencies": {
-    "@compiled/babel-plugin-css-in-js": "0.4.7",
-    "@compiled/css-in-js": "0.4.7",
+    "@compiled/react": "^0.6.0",
     "@juggle/resize-observer": "^3.2.0",
     "intersection-observer": "0.11.0",
     "prop-types": "^15.7.2"

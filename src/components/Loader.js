@@ -8,7 +8,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { styled } from '@compiled/css-in-js';
+import { styled } from '@compiled/react';
 
 const Div = styled.div`
   width: 100%;
